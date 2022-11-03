@@ -1,6 +1,6 @@
-//FileName:		model.js
-//Programmer:	Dan Cliburn
-//Date:			8/26/2020
+//FileName:       model.js
+//Programmer:     Shahbaj Sohal, Brian Huante Lopez, Will Bauer
+//Date:           10/28/2022
 //Purpose:		This file defines the code for our WebGL 2 model
 //The "model" is all of the WebGL2 code that draws our graphics scene
 
@@ -11,6 +11,8 @@ let VAO, vertexPB;
 let offsetX, offsetZ;
 let globalAmbientLightLoc, lightColorLoc, lightPosLoc, constantAttenLoc, linearAttenLoc, quadraticAttenLoc;
 let modelMatrixLoc, viewMatrixLoc, projectionMatrixLoc;
+let moveXAxis = 0;
+let moveYAxis = 0;
 
 //Given a canvas element, return the WebGL2 context
 //This function is defined in section "Architecture Updates" of the textbook
@@ -76,7 +78,55 @@ function initProgram()
 function initBuffers()
 {
     //Vertex position data for the triangle (first three vertex positions) and point (last vertex position)
-    const positions = [0.0, 1.0, 0.0,  -1.0, -1.0, 0.0,  1.0, -1.0, 0.0,  5.0, 0.0, 0.0];
+    const positions = [
+        0.0, 1.0, 0.0, 
+        -1.0, -1.0, 0.0,  
+        1.0, -1.0, 0.0,
+
+        0.0, 1.0, 0.0, 
+        -1.0, -1.0, 0.0,  
+        0, -0.5, -5.0,
+
+        1.0, -1.0, 0.0, 
+        -1.0, -1.0, 0.0,  
+        0, -0.5, -5.0,
+
+        1.0, -1.0, 0.0, 
+        0.0, 1.0, 0.0,  
+        0, -0.5, -5.0,
+
+        1.0, -1.0, 0.0, 
+        0.0, 1.0, 0.0,  
+        0, -0.5, -5.0,
+
+        -3, 1.0, -2.0, 
+        3, 1.0, 0.0,  
+        -3, 1.0, 0.0,
+
+        3, 1.0, 0.0, 
+        3, 1.0, -2.0,  
+        -3, 1.0, -2.0,
+
+        -3, 0.0, -2.0, 
+        3, 0.0, 0.0,  
+        -3, 0.0, 0.0,
+
+        3, 0.0, 0.0, 
+        3, 0.0, -2.0,  
+        -3, 0.0, -2.0,
+
+        0.0, 1.0, 0.0, 
+        -1.0, -1.0, 0.0,  
+        0, -0.5, 1.0,
+
+        1.0, -1.0, 0.0, 
+        -1.0, -1.0, 0.0,  
+        0, -0.5, 1.0,
+
+        1.0, -1.0, 0.0, 
+        0.0, 1.0, 0.0,  
+        0, -0.5, 1.0
+        ];
     
     //Set up Vertex Array Object
     VAO = gl.createVertexArray(); 
@@ -128,7 +178,9 @@ function drawModel()
     var model_matrix = mat4.create();
     var scale_matrix = mat4.create();
     var translate_matrix = mat4.create();
-    var rotate_matrix = mat4.create();
+    var rotate_x_matrix = mat4.create();
+    var rotate_y_matrix = mat4.create();
+
 
     //bind the VAO for the triangle and point
     gl.bindVertexArray(VAO);
@@ -141,14 +193,16 @@ function drawModel()
 
     //THE FIRST EXAMPLE STARTS HERE
     //Set up the projection transformation matrix
-    projection_matrix = mat4.ortho(projection_matrix, -2.0, 2.0, -2.0, 2.0, 0.1, 20.0);
+    //projection_matrix = mat4.ortho(projection_matrix, -2.0, 2.0, -2.0, 2.0, 0.1, 20.0);
     //TODO 2: Comment out the line of code above and add the line of below to observe the effects of a perspective projection
-    //projection_matrix = mat4.frustum(projection_matrix, -0.1, 0.1, -0.1, 0.1, 0.1, 20.0);
+    projection_matrix = mat4.frustum(projection_matrix, -0.1, 0.1, -0.1, 0.1, 0.1, 20.0);
     gl.uniformMatrix4fv(projectionMatrixLoc, false, projection_matrix); //send the projection matrix to the shaders
 
     //Set up the view orientation transformation matrix
-    var eye = [0.0, 0.0, offsetZ];
-    var aim = [0.0, 0.0, offsetZ - 0.1]; //set the aim a little down the negative z-axis in front of the eye
+    // var eye = [0.0, 0.0, offsetZ];
+    // var aim = [0.0, 0.0, offsetZ - 0.1]; //set the aim a little down the negative z-axis in front of the eye
+    var eye = [-6.0, 2.0, 7];
+    var aim = [0.0, 0.0, 0.0];
     var up = [0.0, 1.0, 0];
     view_matrix = mat4.lookAt(view_matrix, eye, aim, up);  //calculate the view orientation matrix
     gl.uniformMatrix4fv(viewMatrixLoc, false, view_matrix); //send view matrix to the shaders
@@ -156,65 +210,51 @@ function drawModel()
     //TODO 3: modify the size, orientation, and positions of the triangles using scale, rotate, and translate to build 
     //an appropriate model_matrix for each triangle. The matrix is sent to the shaders using gl.uniformMatrix4fv.
     //1) Position and draw the red triangle
-    var scale_amount = [0.5, 0.7, 0.5];
-    scale_matrix = mat4.scale(scale_matrix, mat4.identity(scale_matrix), scale_amount);
-    model_matrix = mat4.copy(model_matrix, scale_matrix);
-    gl.uniformMatrix4fv(modelMatrixLoc, false, model_matrix); //send scale matrix to the shaders
-    gl.vertexAttrib3f(1, 1, 0, 0); //use a static vertex attribute (location == 1) to set the color to red
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    // var scale_amount = [0.1, 0.1, 0.1];
+    // scale_matrix = mat4.scale(scale_matrix, mat4.identity(scale_matrix), scale_amount);
+    // model_matrix = mat4.copy(model_matrix, scale_matrix);
+    // gl.uniformMatrix4fv(modelMatrixLoc, false, model_matrix); //send scale matrix to the shaders
+    // gl.vertexAttrib3f(1, 1, 0, 0); //use a static vertex attribute (location == 1) to set the color to red
+    // gl.drawArrays(gl.TRIANGLES, 0, 3);
 
-    //2) Position and draw the cyan triangle
-    var translate_vec = [offsetX, 0.7, -2.5];
-    translate_matrix = mat4.translate(translate_matrix, mat4.identity(translate_matrix), translate_vec);
-    model_matrix = mat4.multiply(model_matrix, translate_matrix, scale_matrix);
-    gl.uniformMatrix4fv(modelMatrixLoc, false, model_matrix); //send model matrix to the shaders
-    gl.vertexAttrib3f(1, 0, 1, 1); //use a static vertex attribute (location == 1) to set the color to cyan
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    // //2) Position and draw the cyan triangle
+    // var translate_vec = [offsetX + 1, 0.0, -2.5];
+    // var scale_amount = [0.41, 0.41, 0.41];
+    // scale_matrix = mat4.scale(scale_matrix, mat4.identity(scale_matrix), scale_amount);
+    // translate_matrix = mat4.translate(translate_matrix, mat4.identity(translate_matrix), translate_vec);
+    // model_matrix = mat4.multiply(model_matrix, translate_matrix, scale_matrix);
+    // gl.uniformMatrix4fv(modelMatrixLoc, false, model_matrix); //send model matrix to the shaders
+    // gl.vertexAttrib3f(1, 0, 1, 1); //use a static vertex attribute (location == 1) to set the color to cyan
+    // gl.drawArrays(gl.TRIANGLES, 0, 3);
 
     //3) Position and draw the yellow triangle
-    translate_vec = [-0.9, 0.8, -5.0];
+    translate_vec = [0, 0.0, 0.0];
     translate_matrix = mat4.translate(translate_matrix, mat4.identity(translate_matrix), translate_vec);
-    var rotate_axis = [0.0, 0.0, 1.0];
-    rotate_matrix = mat4.rotate(rotate_matrix, translate_matrix, 1.23, rotate_axis); //NOTE: angle in radians
-    model_matrix = mat4.multiply(model_matrix, rotate_matrix, scale_matrix);
-    gl.uniformMatrix4fv(modelMatrixLoc, false, model_matrix); //send model matrix to the shaders
-    gl.vertexAttrib3f(1, 1, 1, 0); //use a static vertex attribute (location == 1) to set the color to yellow
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
-/*
-    //THE SECOND EXAMPLE STARTS HERE
-    //THIS EXAMPLE SHOWS THE TRANSFORMATION OF THE SINGLE POINT THAT WE WORKED OUT IN CLASS (see slide 17)
-    //Set up the projection transformation matrix
-	projection_matrix = mat4.ortho(projection_matrix, -11.0, 11.0, -11.0, 11.0, 0.1, 20.0);
-	gl.uniformMatrix4fv(projectionMatrixLoc, false, projection_matrix); //send the projection matrix to the shaders
-    //Set up the view orientation transformation matrix
-	var eye = [0.0, 0.0, 0.5];
-	var aim = [0.0, 0.0, 0.4]; //set the aim a little down the negative z-axis in front of the eye
-	var up = [0.0, 1.0, 0];
-	view_matrix = mat4.lookAt(view_matrix, eye, aim, up);  //calculate the view orientation matrix
-	gl.uniformMatrix4fv(viewMatrixLoc, false, view_matrix); //send view matrix to the shaders
-	
-    //Set up the model transformation matrix for the initial position of the point, then draw the point
-	model_matrix = mat4.identity(model_matrix);
-	gl.uniformMatrix4fv(modelMatrixLoc, false, model_matrix); //send model matrix to the shaders
-	gl.vertexAttrib3f(1, 0, 1, 0); //use a static vertex attribute (location == 1) to set the point color
-	gl.drawArrays(gl.POINTS, 3, 1); //the green point starts at (5,0,0), the last value in the positions array
+    var rotate_x_axis = [1,0,0];
+    rotate_x_matrix = mat4.rotate(rotate_x_matrix, translate_matrix, moveXAxis, rotate_x_axis); //NOTE: angle in radians
+    var rotate_y_matrix = [0,1,0];
+    rotate_y_matrix = mat4.rotate(rotate_y_matrix, translate_matrix, moveYAxis, rotate_y_matrix);
 
-    //Set up a model transformation matrix and draw the second point
-	var m = mat4.create();
-	var vec = [10.0, 0.0, 0.0];
-	var axis = [0.0, 0.0, 1.0];
-	var amount = [0.5, 0.5, 0.5];
-	m = mat4.translate(m, mat4.identity(m), vec);
-	m = mat4.rotate(m, m, 1.571, axis);
-	m = mat4.scale(m, m, amount);
-	gl.uniformMatrix4fv(modelMatrixLoc, false, m); //send this model transformation matrix to the shaders
-	gl.vertexAttrib3f(1, 1, 0, 0); //use a static vertex attribute (location == 1) to set the point color
-	gl.drawArrays(gl.POINTS, 3, 1); //the red point
-    //THE SECOND EXAMPLE ENDS HERE
-*/
-    //Clean
-    gl.bindVertexArray(null);
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    //model_matrix = mat4.multiply(model_matrix, rotate_matrix, scale_matrix);
+    model_matrix = mat4.multiply(model_matrix, rotate_x_matrix, rotate_y_matrix);
+    //model_matrix = rotate_x_matrix;
+
+    //model_matrix = rotate_y_matrix;
+    //model_matrix = rotate_x_matrix;
+
+    gl.uniformMatrix4fv(modelMatrixLoc, false, model_matrix); //send model matrix to the shaders
+    gl.vertexAttrib3f(1, 1, 0, 0); //use a static vertex attribute (location == 1) to set the color to yellow
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.drawArrays(gl.TRIANGLES, 3, 6);
+    gl.drawArrays(gl.TRIANGLES, 6, 9);
+    gl.drawArrays(gl.TRIANGLES, 9, 12);
+    gl.drawArrays(gl.TRIANGLES, 12, 15);
+    gl.drawArrays(gl.TRIANGLES, 15, 18);
+    gl.drawArrays(gl.TRIANGLES, 18, 21);
+    gl.drawArrays(gl.TRIANGLES, 21, 24);
+    gl.drawArrays(gl.TRIANGLES, 24, 27);
+    gl.drawArrays(gl.TRIANGLES, 27, 30);
+    gl.drawArrays(gl.TRIANGLES, 30, 33);
 }
 
 //return the WebGL context to the caller

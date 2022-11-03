@@ -1,7 +1,7 @@
-//FileName:		controller.js
-//Programmer:	Dan Cliburn
-//Date:			8/26/2020
-//Purpose:		This file defines the code for our controller
+//FileName:       controller.js
+//Programmer:     Shahbaj Sohal, Brian Huante Lopez, Will Bauer
+//Date:           10/28/2022
+//Purpose:        This file defines the code for our controller
 //The "controller" runs the program and handles events.
 
 let model;
@@ -13,24 +13,29 @@ function checkKey(event) {
         //left arrow key was pressed (37 in ASCII)
         case 37: {
             updateOffsetX(-0.1); //defined in model.js
+            moveYAxis = moveYAxis - .1;
             break;
         }
 
         //up arrow key was pressed (38 in ASCII)
         case 38: {
             updateOffsetZ(-0.1); //defined in model.js
+            moveXAxis = moveXAxis + .1;
             break;
         }
 
         //right arrow key was pressed (39 in ASCII)
         case 39: {
             updateOffsetX(0.1); //defined in model.js
+            moveYAxis = moveYAxis + .1;
             break;
         }
 
         //down arrow key was pressed (40 in ASCII)
         case 40: {
             updateOffsetZ(0.1); //defined in model.js
+            moveXAxis = moveXAxis - .1;
+
             break;
         }
 
