@@ -1,6 +1,6 @@
 //FileName:		view.js
-//Programmer:	Dan Cliburn
-//Date:			8/7/2020
+//Programmer:	Shahbaj Sohal, Brian Huante Lopez, Wil Bauer
+//Date:			11/2/2022
 //Purpose:		This file defines the code for our view
 //The "view" is our our graphics area (i.e. the "canvas").
 

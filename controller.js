@@ -1,12 +1,13 @@
 //FileName:       controller.js
-//Programmer:     Shahbaj Sohal, Brian Huante Lopez, Will Bauer
-//Date:           10/28/2022
+//Programmer:     Shahbaj Sohal, Brian Huante Lopez, Wil Bauer
+//Date:           11/2/2022
 //Purpose:        This file defines the code for our controller
 //The "controller" runs the program and handles events.
 
 let model;
 let view; //the "view" is our Canvas
 let timer; //used for Task 3 in the lab
+let spinning;
 
 function checkKey(event) {
     switch (event.keyCode) {
@@ -39,6 +40,19 @@ function checkKey(event) {
             break;
         }
 
+        // Space bar stops and resumes spinning of the propeller
+        case 32: {
+            if (spinning) {
+            clearInterval(timer);
+            spinning = false;
+            }
+            else {
+            timer = setInterval(spin, 10);
+            spinning = true;
+            }
+            break;
+        }
+
         //ESC key was pressed
         case 27: {
             resetModel(); //defined in model.js
@@ -56,10 +70,17 @@ function controller() {
     if (model) //make sure everything got initialized before proceeding
     {
         drawModel(); // defined in model.js
+        spinning = true;
+        timer = setInterval(spin, 10);
         window.onkeydown = checkKey; //call checkKey whenever a key is pressed
     }
     else
     {
         alert('Could not initialize the view and model');
     }
+}
+
+function spin() {
+    updateSpin(5);
+    drawModel();
 }
